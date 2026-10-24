@@ -1,0 +1,14 @@
+pandas
+ numpy
+ scikit-learn
+ matplotlib
+ fastapi
+ uvicorn
+ python-multipart
+sqlalchemy
+psycopg2-binary
+streamlit 
+requests 
+httpx 
+pytest
+python-dotenv
