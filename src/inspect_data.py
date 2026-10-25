@@ -20,7 +20,7 @@ import pandas as pd
 DATA_DIR = Path("data/raw")          # where the Kaggle CSV files live
 DATE_COL = "datum"                   # date column name seen in your output
 ATC_COLS = ["M01AB", "M01AE", "N02BA", "N02BE", "N05B", "N05C", "R03", "R06"]
-SHOW_PLOTS = True                   # set True to also see histograms
+SHOW_PLOTS = False                 # set True to also see histograms
 # -------------------------------------------------------------------------------
 
 # showing every column when printing tables
@@ -202,7 +202,7 @@ def main() -> None:
 
     cross_file_check(frames)
 
-    section("DONE - now write what you saw into notes/data_findings.md (numbers, not impressions)")
+    section("DONE")
 
 
 if __name__ == "__main__":
