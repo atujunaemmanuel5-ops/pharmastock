@@ -7,3 +7,5 @@ data/external/
 data/rag/*.pdf
 .pytest_cache/
 .vscode/
+data/processed/*.csv
+practice/*.py
