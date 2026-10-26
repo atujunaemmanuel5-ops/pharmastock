@@ -1,6 +1,15 @@
-"""Project settings: paths, column names and data-preparation decisions.
+"""
+Central configuration for PharmaStock AI.
 
-Every other file imports from here, so a setting is changed in ONE place.
+This file stores settings used by other project files, including:
+- File paths
+- Raw dataset column names
+- Processed dataset column names
+- Decisions about partial days
+
+Keeping these settings in one place makes the project easier to maintain.
+For example, if the dataset's date column changes, update DATE_COLUMN here
+instead of searching through every Python file.
 """
 
 import os
@@ -8,33 +17,108 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# --- paths -------------------------------------------------------------------
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-load_dotenv(PROJECT_ROOT / ".env")          # reads .env if it exists (it is never committed)
 
+# ---------------------------------------------------------------------
+# 1. PROJECT PATHS
+# ---------------------------------------------------------------------
+
+# __file__ is the location of this config.py file.
+# parents[1] moves up two levels:
+#   config.py -> src -> project root
+#
+# Path objects are preferable to manually joining paths with "\" or "/",
+# because pathlib handles the correct path format for the operating system.
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+# Load environment variables from the .env file in the project root.
+# This is useful for settings such as database connection details.
+load_dotenv(PROJECT_ROOT / ".env")
+
+
+# Location of the original, unmodified daily sales dataset.
 RAW_DATA_PATH = PROJECT_ROOT / "data" / "raw" / "salesdaily.csv"
+
+# Directory where processed datasets will be saved.
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
+
+# Final cleaned dataset.
 PROCESSED_PATH = PROCESSED_DIR / "daily_sales_clean.csv"
 
-# --- raw file layout  ---------------------------------------
-DATE_COLUMN = "datum"
-DATE_FORMAT = "%m/%d/%Y"                    # month/day/year, no zero padding, e.g. 1/2/2014
-SALES_COLUMNS = ["M01AB", "M01AE", "N02BA", "N02BE", "N05B", "N05C", "R03", "R06"]
 
-# --- processed (clean) file layout -------------------------------------------
+# ---------------------------------------------------------------------
+# 2. RAW DATASET COLUMN NAMES
+# ---------------------------------------------------------------------
+
+# The original dataset uses "datum" for its date column.
+DATE_COLUMN = "datum"
+
+# Expected date format in the original CSV.
+# For example, "01/02/2014" is interpreted as January 2, 2014.
+DATE_FORMAT = "%m/%d/%Y"
+
+# The eight product groups whose sales we want to prepare.
+#
+# Important:
+# These are product groups, not individual medicine names.
+# The dataset does not contain individual medicine-level sales or stock
+# records, so we must not describe these columns as individual medicines.
+SALES_COLUMNS = [
+    "M01AB",
+    "M01AE",
+    "N02BA",
+    "N02BE",
+    "N05B",
+    "N05C",
+    "R03",
+    "R06",
+]
+
+
+# ---------------------------------------------------------------------
+# 3. OUTPUT DATASET COLUMN NAMES
+# ---------------------------------------------------------------------
+
+# We will convert the original wide-format dataset into long format.
+#
+# Original wide format:
+# datum       M01AB   M01AE   ...
+# 01/02/2014  5.0     3.0     ...
+#
+# New long format:
+# sale_date   product_group   quantity
+# 2014-01-02  M01AB            5.0
+# 2014-01-02  M01AE            3.0
+
 OUTPUT_DATE_COLUMN = "sale_date"
 OUTPUT_GROUP_COLUMN = "product_group"
 OUTPUT_VALUE_COLUMN = "quantity"
 
 
-# The hourly file shows the last day (2019-10-08) stops at 19:00, so its total is incomplete.
-DROP_LAST_PARTIAL_DAY = True
-# The first day (2014-01-02) starts at 08:00. Hours 0-7 are probably zero-sales night hours,
-# so this is False until you prove otherwise from the hourly file.
-DROP_FIRST_PARTIAL_DAY = False
-# If a whole day is absent from a file, fill it with this value. Justified only by the evidence
-# that zeros are recorded values in this dataset (hourly file has every hour, zeros included).
-ABSENT_DAY_FILL_VALUE = 0.0
+# ---------------------------------------------------------------------
+# 4. PARTIAL-DAY DECISIONS
+# ---------------------------------------------------------------------
 
-# --- database (None until you create .env) --------------------------------------
+# The hourly dataset ends at 19:00 on 2019-10-08.
+# This suggests that the final date in the daily dataset may be incomplete.
+#
+# Therefore, the pipeline removes the last date if this setting is True.
+# This decision should be documented as an assumption based on the hourly
+# dataset, rather than treated as proof that the daily record is invalid.
+DROP_LAST_PARTIAL_DAY = True
+
+# The hourly dataset begins at 08:00 on 2014-01-02.
+# We do not yet know whether the missing earlier hours represent zero sales
+# or simply an incomplete first day.
+#
+# Keep this False until the source data or documentation confirms that the
+# first day's sales are complete or otherwise safe to retain.
+DROP_FIRST_PARTIAL_DAY = False
+
+
+# ---------------------------------------------------------------------
+# 5. OPTIONAL DATABASE CONFIGURATION
+# ---------------------------------------------------------------------
+
+# Read DATABASE_URL from the .env file if one is configured.
+# It can remain None while the project is using CSV files only.
 DATABASE_URL = os.getenv("DATABASE_URL")
