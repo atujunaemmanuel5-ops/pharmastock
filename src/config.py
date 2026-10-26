@@ -122,3 +122,5 @@ DROP_FIRST_PARTIAL_DAY = False
 # Read DATABASE_URL from the .env file if one is configured.
 # It can remain None while the project is using CSV files only.
 DATABASE_URL = os.getenv("DATABASE_URL")
+FORECAST_DIR = PROJECT_ROOT / "data" / "forecasts"
+EVALUATION_PATH = FORECAST_DIR / "forecast_evaluation.csv"
