@@ -124,3 +124,37 @@ DROP_FIRST_PARTIAL_DAY = False
 DATABASE_URL = os.getenv("DATABASE_URL")
 FORECAST_DIR = PROJECT_ROOT / "data" / "forecasts"
 EVALUATION_PATH = FORECAST_DIR / "forecast_evaluation.csv"
+
+
+# ---------------------------------------------------------------------
+# 6. INVENTORY DATA CONFIGURATION
+# ---------------------------------------------------------------------
+
+# Directory containing the synthetic datasets.
+SYNTHETIC_DATA_DIR = (
+    PROJECT_ROOT / "data" / "raw" / "synthetic_data"
+)
+
+# Synthetic inventory datasets.
+DRUGS_PATH = SYNTHETIC_DATA_DIR / "drugs.csv"
+
+INVENTORY_BATCHES_PATH = (
+    SYNTHETIC_DATA_DIR / "inventory_batches.csv"
+)
+
+SALES_DAILY_PATH = (
+    SYNTHETIC_DATA_DIR / "sales_daily_simulated.csv"
+)
+
+DRUG_SHARES_PATH = SYNTHETIC_DATA_DIR / "drug_shares.csv"
+
+# Column names used by the inventory datasets.
+DRUG_ID_COLUMN = "drug_id"
+BATCH_ID_COLUMN = "batch_id"
+QUANTITY_ON_HAND_COLUMN = "qty_on_hand"
+EXPIRY_DATE_COLUMN = "expiry_date"
+RECEIVED_DATE_COLUMN = "received_date"
+AS_OF_DATE_COLUMN = "as_of_date"
+EXPIRY_REPORT_PATH = (
+    PROJECT_ROOT / "data" / "processed" / "expiry_report.csv"
+)
