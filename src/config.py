@@ -125,6 +125,18 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 FORECAST_DIR = PROJECT_ROOT / "data" / "forecasts"
 EVALUATION_PATH = FORECAST_DIR / "forecast_evaluation.csv"
 
+# ATC code classification
+
+ATC_CODES = {
+    "M01AB": "Anti-inflammatory and antirheumatic products, acetic acid derivatives",
+    "M01AE": "Anti-inflammatory and antirheumatic products, propionic acid derivatives",
+    "N02BA": "Other analgesics and antipyretics, salicylic acid and derivatives",
+    "N02BE": "Other analgesics and antipyretics, pyrazolones and anilides",
+    "N05B": "Anxiolytics",
+    "N05C": "Hypnotics and sedatives",
+    "R03": "Drugs for obstructive airway diseases",
+    "R06": "Antihistamines for systemic use",
+}
 
 # ---------------------------------------------------------------------
 # 6. INVENTORY DATA CONFIGURATION

@@ -4,6 +4,7 @@ import logging
 
 import pandas as pd
 
+
 try:
     from .config import (
         DRUGS_PATH,
@@ -15,6 +16,7 @@ try:
         RECEIVED_DATE_COLUMN,
         AS_OF_DATE_COLUMN,
         EXPIRY_REPORT_PATH,
+        
     )
 except ImportError:
     from config import (
@@ -27,6 +29,7 @@ except ImportError:
         RECEIVED_DATE_COLUMN,
         AS_OF_DATE_COLUMN,
         EXPIRY_REPORT_PATH,
+        
     )
 
 
@@ -177,6 +180,11 @@ def load_drug_catalogue() -> pd.DataFrame:
 
     return drugs
 
+def load_product_group_catalogue() ->pd.DataFrame:
+    """Load product groups"""
+
+
+    
 
 def add_drug_names(
     batches: pd.DataFrame,
@@ -360,6 +368,8 @@ if __name__ == "__main__":
 
     stock_summary = summarize_stock(batches)
     expiry_report = create_expiry_report(inventory)
+
+    
 
     print("\nStock summary:")
     print(stock_summary.head().to_string(index=False))

@@ -36,3 +36,7 @@ class StockSummaryRecord(BaseModel):
     drug_id: str
     total_stock: int
     usable_stock: int
+
+class DrugBank(BaseModel):
+    drug_id: str
+    generic_name: str

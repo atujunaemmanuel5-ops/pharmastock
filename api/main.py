@@ -1,14 +1,18 @@
+from ast import List
 import logging
 
 from fastapi import FastAPI, HTTPException
 
-from api.schemas import ExpiryRecord, StockSummaryRecord
+from src.config import ATC_CODES
+
+from api.schemas import DrugBank, ExpiryRecord, StockSummaryRecord
 from src.inventory import (
     load_inventory_batches,
     load_drug_catalogue,
     add_drug_names,
     create_expiry_report,
     summarize_stock,
+    
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -85,3 +89,41 @@ def stock_summary():
             status_code=500,
             detail="Could not generate stock summary.",
         ) from exc
+
+# drug end point
+
+@app.get("/inventory/drugs",response_model=list[DrugBank])
+def drugs():
+    """Returns drug catalogue"""
+
+    try:
+        drug_cat=load_drug_catalogue()
+
+        return drug_cat.to_dict(orient="records")
+    except FileNotFoundError as exc:
+        logger.exception("Required drug data file was not found.")
+
+        raise HTTPException(
+            status_code=500,
+            detail="Required drug data is unavailable.",
+        ) from exc
+
+    
+# product groups end point
+
+
+
+
+
+
+@app.get("/inventory/product")
+def get_atc_codes():
+    
+    return [
+        {
+            "code": code,
+            "description": description
+        }
+        for code, description in ATC_CODES.items()
+    ]
+
