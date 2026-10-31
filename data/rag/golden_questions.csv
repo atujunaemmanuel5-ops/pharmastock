@@ -1,0 +1,21 @@
+question,expected_document,expected_page
+What is the purpose of the Uganda Clinical Guidelines?,uganda_clinical_guidelines_2023.pdf,22
+Can the Uganda Clinical Guidelines replace clinical judgement?,uganda_clinical_guidelines_2023.pdf,22
+What does the UCG say about procurement?,uganda_clinical_guidelines_2023.pdf,49
+Where is misoprostol listed in the Uganda guideline?,uganda_clinical_guidelines_2023.pdf,783
+Where is amoxicillin referenced in the Uganda guideline?,uganda_clinical_guidelines_2023.pdf,101
+Where is levonorgestrel referenced in the Uganda guideline?,uganda_clinical_guidelines_2023.pdf,38
+What does the Uganda guideline say about prescription?,uganda_clinical_guidelines_2023.pdf,55
+What is the essential medicines list for Uganda?,uganda_emhslu_2023.pdf,1
+What does EMHSLU say about amoxicillin?,uganda_emhslu_2023.pdf,24
+What does EMHSLU say about warfarin?,uganda_emhslu_2023.pdf,25
+What does EMHSLU say about levonorgestrel?,uganda_emhslu_2023.pdf,42
+What does EMHSLU say about misoprostol?,uganda_emhslu_2023.pdf,25
+What is the role of procurement in EMHSLU?,uganda_emhslu_2023.pdf,10
+What does EMHSLU say about dispensing?,uganda_emhslu_2023.pdf,14
+What is the WHO Model List of Essential Medicines?,who_model_list_essential_medicines_24th_2025.pdf,1
+What does the WHO list say about amoxicillin?,who_model_list_essential_medicines_24th_2025.pdf,12
+What does the WHO list say about warfarin?,who_model_list_essential_medicines_24th_2025.pdf,42
+What does the WHO list say about levonorgestrel?,who_model_list_essential_medicines_24th_2025.pdf,59
+What does the WHO list say about misoprostol?,who_model_list_essential_medicines_24th_2025.pdf,60
+How does the WHO list guide procurement?,who_model_list_essential_medicines_24th_2025.pdf,2

@@ -4,8 +4,10 @@ __pycache__/
 *.pyc
 data/raw/
 data/external/
-data/rag/*.pdf
+data/pharmastock.db
 .pytest_cache/
 .vscode/
 data/processed/*.csv
 practice/
+frontend/node_modules/
+frontend/dist/

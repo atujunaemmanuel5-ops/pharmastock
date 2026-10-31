@@ -1,6 +1,7 @@
 """Inventory loading, validation, expiry monitoring, and stock summaries."""
 
 import logging
+from math import ceil
 
 import pandas as pd
 
@@ -146,13 +147,12 @@ def load_inventory_batches() -> pd.DataFrame:
 
 def load_drug_catalogue() -> pd.DataFrame:
     """Load the drug catalogue and validate its required columns."""
+    try:
+        from .simulate_drugs import load_drugs
+    except ImportError:
+        from simulate_drugs import load_drugs
 
-    if not DRUGS_PATH.exists():
-        raise FileNotFoundError(
-            f"Drug catalogue not found: {DRUGS_PATH}"
-        )
-
-    drugs = pd.read_csv(DRUGS_PATH)
+    drugs = load_drugs()
 
     required_columns = ["drug_id", "generic_name"]
 
@@ -356,6 +356,86 @@ def summarise_usable_stock(
     )
 
     return usable_stock
+
+
+def days_cover(usable_units: float, average_daily_demand: float) -> float:
+    """Return coverage in days; zero demand is represented as infinity."""
+    if average_daily_demand <= 0:
+        return float("inf") if usable_units > 0 else 0.0
+    return max(0.0, usable_units) / average_daily_demand
+
+
+def reorder_recommendation(
+    usable_units: float,
+    average_daily_demand: float,
+    lead_time_days: int,
+    pack_size: int,
+    forecast_error: float = 0.0,
+    service_z: float = 1.65,
+) -> dict:
+    """Calculate stock risk and a pack-rounded reorder recommendation.
+
+    ``forecast_error`` is an absolute daily error estimate. This is a planning
+    heuristic for simulated stock, not a claim of clinical accuracy.
+    """
+    if lead_time_days < 0 or pack_size <= 0:
+        raise ValueError("lead_time_days must be non-negative and pack_size must be positive")
+    demand = max(0.0, float(average_daily_demand))
+    lead_demand = demand * lead_time_days
+    safety_stock = max(0.0, service_z * max(0.0, forecast_error) * (lead_time_days ** 0.5))
+    reorder_point = lead_demand + safety_stock
+    coverage = days_cover(float(usable_units), demand)
+    if usable_units <= 0:
+        risk = "High"
+    elif demand > 0 and coverage < lead_time_days:
+        risk = "High"
+    elif demand > 0 and coverage < lead_time_days + 7:
+        risk = "Medium"
+    else:
+        risk = "Low"
+    raw_qty = max(0.0, reorder_point - max(0.0, float(usable_units)))
+    reorder_qty = int(ceil(raw_qty / pack_size) * pack_size) if raw_qty else 0
+    return {
+        "usable_stock": int(max(0, usable_units)),
+        "average_daily_demand": round(demand, 3),
+        "lead_time_days": int(lead_time_days),
+        "days_of_cover": None if coverage == float("inf") else round(coverage, 2),
+        "safety_stock": round(safety_stock, 3),
+        "reorder_point": round(reorder_point, 3),
+        "risk_level": risk,
+        "reorder_quantity": reorder_qty,
+        "pack_size": int(pack_size),
+        "is_simulated": True,
+    }
+
+
+def velocity_label(units_per_day: float, fast_threshold: float = 10.0, medium_threshold: float = 3.0) -> str:
+    if units_per_day >= fast_threshold:
+        return "Fast"
+    if units_per_day >= medium_threshold:
+        return "Medium"
+    return "Slow"
+
+
+def velocity_report(sales: pd.DataFrame, catalogue: pd.DataFrame, windows=(28, 90)) -> pd.DataFrame:
+    """Rank simulated drug sales and report a short-window trend."""
+    required = {"sale_date", "drug_id", "quantity"}
+    if not required.issubset(sales.columns):
+        raise ValueError(f"Sales missing columns: {sorted(required.difference(sales.columns))}")
+    sales = sales.copy()
+    sales["sale_date"] = pd.to_datetime(sales["sale_date"], errors="raise")
+    end = sales["sale_date"].max()
+    records = []
+    for drug_id in catalogue["drug_id"]:
+        row = {"drug_id": drug_id}
+        values = {}
+        for window in windows:
+            values[window] = float(sales[(sales["drug_id"] == drug_id) & (sales["sale_date"] > end - pd.Timedelta(days=window))]["quantity"].sum()) / window
+            row[f"units_per_day_{window}d"] = round(values[window], 3)
+        row["velocity"] = velocity_label(values[windows[0]])
+        row["trend"] = "Rising" if values[windows[0]] > values[windows[1]] * 1.05 else "Falling" if values[windows[0]] < values[windows[1]] * 0.95 else "Stable"
+        records.append(row)
+    return pd.DataFrame(records).merge(catalogue[["drug_id", "generic_name", "atc_level4", "is_simulated"]], on="drug_id", how="left")
 
 
 if __name__ == "__main__":

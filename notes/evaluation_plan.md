@@ -351,4 +351,10 @@ The next development step is to connect the sales forecasts to an inventory comp
 
 This would allow the application to estimate stock coverage and potential replenishment needs. However, actual stock-out prediction would require appropriate inventory data and validation against real stock-out outcomes.
 
-**Current status:** The baseline forecasting and evaluation pipeline is operational. Inventory risk estimation remains a separate development task.
+**Current status:** The baseline forecasting, inventory risk, expiry, safety, audit, and local RAG pipelines are operational. Inventory quantities and lead times in the demo are simulated and are labelled as such by the API and dashboard.
+
+## 12. Current local verification (2026-10-31)
+
+The application now has a database-backed local runtime. `data/forecasts/best_methods.csv` records the selected method per product group, and the API uses the persisted sales history for forecasts and the simulated inventory tables for reorder estimates.
+
+The RAG package contains the downloaded Uganda Clinical Guidelines, Uganda Essential Medicines and Health Supplies List, and WHO Model List documents. Run `python -m src.rag.evaluate` to reproduce the retrieval smoke evaluation documented in `notes/rag_eval.md`.
