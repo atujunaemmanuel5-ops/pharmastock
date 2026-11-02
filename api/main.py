@@ -9,27 +9,31 @@ from math import sqrt
 from functools import lru_cache
 
 import pandas as pd
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.schemas import AskRequest, DispenseRequest, MedicationCreate, ProductGroup, UploadSummary
 from src.config import ATC_CODES, PROCESSED_PATH
-from src.db import database_status, ensure_seeded, record_dispense, replace_uploaded_sales, table_frame, drugs_table, inventory_table, sales_table, rx_table, register_medication
-from src.data_prep import complete_calendar, standardise_columns, validate_and_prepare_data
+from src.db import confirm_dispense, database_status, ensure_seeded, record_dispense, replace_uploaded_sales, restore_uploaded_sales, table_frame, upload_history, drugs_table, inventory_table, sales_table, rx_table, register_medication
+from src.data_prep import complete_calendar, standardise_columns, to_long, validate_and_prepare_data
 from src.expiry import add_expiry_fields, expiry_risk_report
-from src.forecasting import forecast_next_days, load_daily_series, WEEKDAY_AVERAGE
+from src.forecasting import forecast_next_days, load_daily_series, run_pipeline, WEEKDAY_AVERAGE
 from src.inventory import add_drug_names, create_expiry_report, load_drug_catalogue, load_inventory_batches, reorder_recommendation, summarize_stock, velocity_report
 from src.rag.answer import answer_question
 from src.safety.dispense_check import check_cart
 from src.safety.interactions import load_ddinter_pairs, load_interactions
 from src.safety.rx_gate import load_rx_rules
 from src.simulate_drugs import load_simulated_sales
+from src.security import require_admin_access, require_api_access
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-app = FastAPI(title="PharmaStock AI API", version="0.2.0")
+app = FastAPI(title="PharmaStock AI API", version="0.3.0")
 frontend_origins = [origin.strip() for origin in os.getenv("PHARMASTOCK_FRONTEND_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",") if origin.strip()]
-app.add_middleware(CORSMiddleware, allow_origins=frontend_origins, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_origins=frontend_origins, allow_credentials=False, allow_methods=["GET", "POST"], allow_headers=["Content-Type", "X-API-Key", "X-Admin-Key", "X-Actor-ID"])
+
+MAX_UPLOAD_BYTES = int(os.getenv("PHARMASTOCK_MAX_UPLOAD_BYTES", str(5 * 1024 * 1024)))
+MAX_UPLOAD_ROWS = int(os.getenv("PHARMASTOCK_MAX_UPLOAD_ROWS", "100000"))
 
 
 @lru_cache(maxsize=1)
@@ -73,7 +77,15 @@ def active_rx_rules() -> pd.DataFrame:
 
 @app.get("/health")
 def health_status():
-    return {"status": "ok", "service": "pharmastock-api", "database": database_status(), "is_simulated_inventory": True}
+    try:
+        ensure_seeded()
+        database = database_status()
+        if database == "unavailable":
+            raise RuntimeError("database unavailable")
+        return {"status": "ok", "service": "pharmastock-api", "database": database, "is_simulated_inventory": True}
+    except Exception as exc:
+        logger.exception("Readiness check failed")
+        raise HTTPException(503, detail=f"Service not ready: {exc}") from exc
 
 
 @app.get("/products", response_model=list[ProductGroup])
@@ -201,9 +213,9 @@ def get_atc_codes():
 
 
 @app.post("/inventory/medications")
-def add_medication(request: MedicationCreate):
+def add_medication(request: MedicationCreate, actor_id: str = Depends(require_admin_access)):
     try:
-        created = register_medication(request.model_dump())
+        created = register_medication(request.model_dump(), actor_id=actor_id)
         load_ddinter_pairs.cache_clear()
         return created
     except (ValueError, TypeError) as exc:
@@ -226,20 +238,25 @@ def safety_interactions():
 
 
 @app.post("/dispense/check")
-def dispense_check(request: DispenseRequest):
+def dispense_check(request: DispenseRequest, actor_id: str = Depends(require_api_access)):
     batches, catalogue = inventory_data()
     result = check_cart(request.drug_ids, catalogue, batches, request.prescription_reference, request.override_reason, rules=active_rx_rules(), pairs=load_interactions())
-    result["audit_id"] = record_dispense(result)
+    result["audit_id"] = record_dispense(result, actor_id=actor_id)
     return result
 
 
 @app.post("/dispense/confirm")
-def dispense_confirm(request: DispenseRequest):
-    result = dispense_check(request)
+def dispense_confirm(request: DispenseRequest, actor_id: str = Depends(require_api_access)):
+    batches, catalogue = inventory_data()
+    result = check_cart(request.drug_ids, catalogue, batches, request.prescription_reference, request.override_reason, rules=active_rx_rules(), pairs=load_interactions())
+    result["audit_id"] = record_dispense(result, actor_id=actor_id)
     if not result["can_confirm"]:
         raise HTTPException(403, detail={"message": "Dispense cannot be confirmed", "check": result})
-    result["confirmed"] = True
-    result["audit_id"] = record_dispense(result, confirmed=True)
+    try:
+        result["confirmed"] = True
+        result["audit_id"] = confirm_dispense(result, actor_id=actor_id)
+    except ValueError as exc:
+        raise HTTPException(409, detail=str(exc)) from exc
     return result
 
 
@@ -249,15 +266,47 @@ def ask(request: AskRequest):
 
 
 @app.post("/upload", response_model=UploadSummary)
-async def upload(file: UploadFile = File(...)):
+async def upload(file: UploadFile = File(...), actor_id: str = Depends(require_admin_access)):
     if not (file.filename or "").lower().endswith(".csv"):
         raise HTTPException(400, "Upload a CSV file")
+    content_length = int(file.headers.get("content-length", "0") or 0)
+    if content_length > MAX_UPLOAD_BYTES:
+        raise HTTPException(413, f"CSV exceeds the {MAX_UPLOAD_BYTES} byte upload limit")
     try:
-        raw = pd.read_csv(io.BytesIO(await file.read()))
+        content = await file.read(MAX_UPLOAD_BYTES + 1)
+        if len(content) > MAX_UPLOAD_BYTES:
+            raise HTTPException(413, f"CSV exceeds the {MAX_UPLOAD_BYTES} byte upload limit")
+        raw = pd.read_csv(io.BytesIO(content))
+        if len(raw.index) > MAX_UPLOAD_ROWS:
+            raise HTTPException(413, f"CSV exceeds the {MAX_UPLOAD_ROWS} row upload limit")
         cleaned = standardise_columns(validate_and_prepare_data(raw))
         complete_calendar(cleaned)
-        rows = replace_uploaded_sales(cleaned)
+        rows = replace_uploaded_sales(cleaned, created_by=actor_id, filename=file.filename or "uploaded.csv")
         sales_data.cache_clear()
+        try:
+            # A new history must not continue using the winner table from an
+            # older dataset. Rebuild the rolling evaluation artifacts after
+            # the validated upload has been committed.
+            run_pipeline(to_long(cleaned))
+        except Exception:
+            logger.exception("Sales upload committed, but forecast artifacts could not be rebuilt")
+    except HTTPException:
+        raise
     except (ValueError, pd.errors.ParserError) as exc:
         raise HTTPException(400, str(exc)) from exc
     return UploadSummary(rows=rows, groups=len(ATC_CODES), first_date=str(cleaned["datum"].min().date()), last_date=str(cleaned["datum"].max().date()), message="CSV validated and persisted as the active product-group sales history.")
+
+
+@app.get("/uploads")
+def uploads(actor_id: str = Depends(require_admin_access)):
+    return upload_history()
+
+
+@app.post("/uploads/{upload_id}/restore")
+def restore_upload(upload_id: int, actor_id: str = Depends(require_admin_access)):
+    try:
+        rows = restore_uploaded_sales(upload_id, created_by=actor_id)
+        sales_data.cache_clear()
+        return {"upload_id": upload_id, "rows": rows, "restored_by": actor_id}
+    except ValueError as exc:
+        raise HTTPException(404, str(exc)) from exc

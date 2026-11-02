@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS inventory_batches (
 );
 
 CREATE TABLE IF NOT EXISTS sales_daily (
+    id BIGSERIAL PRIMARY KEY,
     sale_date DATE NOT NULL,
     drug_id TEXT,
     product_group TEXT,
@@ -65,7 +66,36 @@ CREATE TABLE IF NOT EXISTS dispensing_log (
     decision TEXT NOT NULL,
     reasons_json JSONB NOT NULL,
     prescription_ref TEXT,
-    override_reason TEXT
+    override_reason TEXT,
+    created_by TEXT NOT NULL DEFAULT 'unknown-actor'
+);
+
+CREATE TABLE IF NOT EXISTS sales_uploads (
+    id BIGSERIAL PRIMARY KEY,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    created_by TEXT NOT NULL,
+    filename TEXT NOT NULL,
+    rows INTEGER NOT NULL,
+    first_date DATE NOT NULL,
+    last_date DATE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS sales_upload_rows (
+    id BIGSERIAL PRIMARY KEY,
+    upload_id BIGINT NOT NULL REFERENCES sales_uploads(id),
+    sale_date DATE NOT NULL,
+    product_group TEXT NOT NULL,
+    quantity NUMERIC NOT NULL CHECK (quantity >= 0)
+);
+
+CREATE TABLE IF NOT EXISTS admin_audit_log (
+    id BIGSERIAL PRIMARY KEY,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    created_by TEXT NOT NULL,
+    action TEXT NOT NULL,
+    resource TEXT NOT NULL,
+    resource_id TEXT,
+    detail_json JSONB
 );
 
 CREATE TABLE IF NOT EXISTS doc_chunks (
@@ -79,3 +109,4 @@ CREATE TABLE IF NOT EXISTS doc_chunks (
 
 CREATE INDEX IF NOT EXISTS idx_inventory_batches_drug_id ON inventory_batches(drug_id);
 CREATE INDEX IF NOT EXISTS idx_inventory_batches_expiry ON inventory_batches(expiry_date);
+CREATE INDEX IF NOT EXISTS idx_sales_upload_rows_upload_id ON sales_upload_rows(upload_id);

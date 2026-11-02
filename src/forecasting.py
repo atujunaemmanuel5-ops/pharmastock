@@ -103,7 +103,8 @@ def load_daily_series(
 ):
     """Load a long-format daily file and validate it."""
     if not path.exists():
-        raise FileNotFoundError(f"Dataset not found: {path}")
+        from .demo_data import processed_sales
+        return processed_sales()
 
     df = pd.read_csv(path, parse_dates=[date_col])
 

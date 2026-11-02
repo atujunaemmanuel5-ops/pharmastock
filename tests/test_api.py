@@ -47,3 +47,21 @@ def test_safety_reference_endpoints_return_serializable_rows():
 
 def test_what_if_validation_rejects_invalid_demand_multiplier():
     assert client.get("/reorder/R03/what-if", params={"demand_multiplier": 6}).status_code == 422
+
+
+def test_production_auth_protects_dispense_checks(monkeypatch):
+    monkeypatch.setenv("PHARMASTOCK_AUTH_REQUIRED", "true")
+    monkeypatch.setenv("PHARMASTOCK_API_KEY", "test-api-key")
+    monkeypatch.setenv("PHARMASTOCK_ADMIN_KEY", "test-admin-key")
+    assert client.post("/dispense/check", json={"drug_ids": ["D005"]}).status_code == 401
+    response = client.post("/dispense/check", headers={"X-API-Key": "test-api-key", "X-Actor-ID": "tester"}, json={"drug_ids": ["D005"]})
+    assert response.status_code == 200
+    monkeypatch.setenv("PHARMASTOCK_AUTH_REQUIRED", "false")
+
+
+def test_confirm_dispense_decrements_one_unit_and_records_actor():
+    before = {row["drug_id"]: row["usable_stock"] for row in client.get("/inventory/stock-summary").json()}
+    response = client.post("/dispense/confirm", headers={"X-Actor-ID": "test-dispenser"}, json={"drug_ids": ["D005"]})
+    assert response.status_code == 200
+    after = {row["drug_id"]: row["usable_stock"] for row in client.get("/inventory/stock-summary").json()}
+    assert after["D005"] == before["D005"] - 1

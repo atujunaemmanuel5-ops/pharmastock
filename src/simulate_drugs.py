@@ -16,7 +16,8 @@ except ImportError:
 
 def load_drugs() -> pd.DataFrame:
     if not DRUGS_PATH.exists():
-        raise FileNotFoundError(f"Drug catalogue not found: {DRUGS_PATH}")
+        from .demo_data import drugs
+        return drugs()
     frames = [pd.read_csv(DRUGS_PATH)]
     additions_path = SYNTHETIC_DATA_DIR / "catalogue_additions.csv"
     if additions_path.exists():
@@ -32,6 +33,8 @@ def load_drugs() -> pd.DataFrame:
 
 
 def load_drug_shares() -> pd.DataFrame:
+    if not DRUG_SHARES_PATH.exists():
+        return pd.DataFrame(columns=["dataset_group", "drug_id", "share_of_group"])
     shares = pd.read_csv(DRUG_SHARES_PATH)
     required = {"dataset_group", "drug_id", "share_of_group"}
     missing = required.difference(shares.columns)
@@ -45,7 +48,8 @@ def load_drug_shares() -> pd.DataFrame:
 
 def load_simulated_sales() -> pd.DataFrame:
     if not SALES_DAILY_PATH.exists():
-        raise FileNotFoundError(f"Simulated sales not found: {SALES_DAILY_PATH}")
+        from .demo_data import simulated_sales
+        return simulated_sales()
     sales = pd.read_csv(SALES_DAILY_PATH, parse_dates=["sale_date"])
     required = {"sale_date", "drug_id", "quantity", "is_simulated"}
     missing = required.difference(sales.columns)

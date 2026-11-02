@@ -41,9 +41,8 @@ def load_inventory_batches() -> pd.DataFrame:
     """Load inventory batches and validate required data."""
 
     if not INVENTORY_BATCHES_PATH.exists():
-        raise FileNotFoundError(
-            f"Inventory batches file not found: {INVENTORY_BATCHES_PATH}"
-        )
+        from .demo_data import inventory_batches
+        return inventory_batches()
 
     # Read first so we can check column names before parsing dates.
     batches = pd.read_csv(INVENTORY_BATCHES_PATH)

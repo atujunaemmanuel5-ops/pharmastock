@@ -41,6 +41,48 @@ Open `http://127.0.0.1:5173`. The API docs are at
 is retained under `dashboard/` as a legacy fallback, but React is the primary
 presentation UI.
 
+## Deploy the hardened demo
+
+The recommended layout is a Render Python web service for FastAPI, a managed
+PostgreSQL database, and a Vercel static deployment for `frontend/`. The
+repository includes [render.yaml](render.yaml) and
+[frontend/vercel.json](frontend/vercel.json) as starting configuration.
+
+For the API, configure these environment variables in the hosting provider:
+
+```text
+ENVIRONMENT=production
+PHARMASTOCK_AUTH_REQUIRED=true
+PHARMASTOCK_DB_BACKEND=postgres
+DATABASE_URL=postgresql+psycopg2://...
+PHARMASTOCK_API_KEY=<long random dispenser key>
+PHARMASTOCK_ADMIN_KEY=<different long random admin key>
+PHARMASTOCK_FRONTEND_ORIGINS=https://<your-frontend-domain>
+```
+
+The API start command is:
+
+```text
+uvicorn api.main:app --host 0.0.0.0 --port $PORT
+```
+
+For the Vite build, set `VITE_API_URL` to the deployed API URL. A browser-visible
+admin key is suitable only for a controlled demo; real pharmacy users should
+authenticate through a server-side identity layer rather than embedding an
+admin secret in JavaScript.
+
+The API now rejects unauthenticated dispensing checks when production auth is
+enabled, limits CSV uploads, records upload history, performs a compatibility
+migration on startup, and decrements the selected FEFO batch transactionally
+when a dispense is confirmed. `GET /health` is a readiness check and returns
+503 if seeding or the database is unavailable.
+
+The real Kaggle and synthetic input files are intentionally excluded from Git
+because of licensing and data-packaging concerns. If they are absent, the
+tracked deterministic fallback in `src/demo_data.py` boots a clearly simulated
+demo. For a serious deployment, package the approved data artifact separately
+and review the source licences before enabling operational use.
+
 ## Main workflows
 
 - `POST /dispense/check` checks unknown drugs, sourced prescription gates,

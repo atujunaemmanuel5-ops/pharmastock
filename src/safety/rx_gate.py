@@ -14,7 +14,8 @@ RX_RULES_PATH = SYNTHETIC_DATA_DIR / "rx_rules.csv"
 
 def load_rx_rules(path=RX_RULES_PATH) -> pd.DataFrame:
     if not path.exists():
-        raise FileNotFoundError(f"Prescription rules not found: {path}")
+        from ..demo_data import rx_rules
+        return rx_rules()
     rules = pd.read_csv(path, keep_default_na=False)
     additions_path = SYNTHETIC_DATA_DIR / "catalogue_additions.csv"
     if path == RX_RULES_PATH and additions_path.exists():
