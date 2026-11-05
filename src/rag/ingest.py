@@ -39,19 +39,19 @@ DEFAULT_DOCUMENTS = [
 LIGHT_PAGE_HINTS = {
     "uganda_clinical_guidelines_2023.pdf": {
         "pages": {22, 38, 49, 55, 101, 783},
-        "terms": {"clinical judgement", "procurement", "amoxicillin", "levonorgestrel", "misoprostol", "prescription"},
+        "terms": set(),
     },
     "uganda_emhslu_2023.pdf": {
         "pages": {1, 10, 14, 24, 25, 42},
-        "terms": {"amoxicillin", "warfarin", "levonorgestrel", "misoprostol", "procurement", "dispensing", "essential medicines"},
+        "terms": set(),
     },
     "who_model_list_essential_medicines_24th_2025.pdf": {
         "pages": {1, 2, 12, 42, 59, 60},
-        "terms": {"amoxicillin", "warfarin", "levonorgestrel", "misoprostol", "procurement", "essential medicines"},
+        "terms": set(),
     },
     "Practical Guideline for Dispensing at Lower Level Health Centres 2014_Final_0.p.pdf": {
-        "pages": {1, 14},
-        "terms": {"dispens", "prescription", "amoxicillin", "patient counselling"},
+        "pages": {1, 3, 4, 12, 14, 16, 21},
+        "terms": set(),
     },
 }
 
@@ -98,7 +98,7 @@ def ingest_light_directory(directory: Path) -> list[dict]:
                         "source_url": str(path),
                         "text": text,
                     })
-    return records or DEFAULT_DOCUMENTS.copy()
+    return DEFAULT_DOCUMENTS.copy() + records
 
 
 def load_corpus(directory: Path | None = None) -> list[dict]:
