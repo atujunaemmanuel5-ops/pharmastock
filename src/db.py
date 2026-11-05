@@ -13,6 +13,7 @@ import os
 from datetime import date, timedelta
 from functools import lru_cache
 from pathlib import Path
+from threading import Lock
 from uuid import uuid4
 
 import pandas as pd
@@ -90,6 +91,8 @@ schema_migrations_table = Table(
     "schema_migrations", metadata,
     Column("name", String(255), primary_key=True), Column("applied_at", DateTime(timezone=True), nullable=False),
 )
+
+_seed_lock = Lock()
 admin_audit_table = Table(
     "admin_audit_log", metadata,
     Column("id", Integer, primary_key=True, autoincrement=True), Column("created_at", DateTime(timezone=True), nullable=False),
@@ -210,7 +213,12 @@ def seed_database(force: bool = False) -> None:
 
 @lru_cache(maxsize=1)
 def ensure_seeded() -> None:
-    seed_database()
+    # Render and other hosts can probe /health concurrently during startup.
+    # lru_cache does not prevent two cache misses from entering this function
+    # at the same time, so serialize the first seed to avoid SQLite locks and
+    # duplicate PDF/data loading on small instances.
+    with _seed_lock:
+        seed_database()
 
 
 def table_frame(table: Table) -> pd.DataFrame:

@@ -11,9 +11,9 @@ services:
       - key: PHARMASTOCK_AUTH_REQUIRED
         value: "true"
       - key: PHARMASTOCK_DB_BACKEND
-        value: postgres
-      - key: DATABASE_URL
-        sync: false
+        value: sqlite
+      - key: PYTHON_VERSION
+        value: 3.12.10
       - key: PHARMASTOCK_API_KEY
         sync: false
       - key: PHARMASTOCK_ADMIN_KEY
