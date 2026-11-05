@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import fitz
@@ -56,6 +57,11 @@ def ingest_directory(directory: Path) -> list[dict]:
 
 def load_corpus(directory: Path | None = None) -> list[dict]:
     """Load the local RAG corpus, falling back to built-in passages."""
+    # The free hosted demo has only 512 MB available. Keep its cited safety
+    # passages available without loading several large PDFs into memory during
+    # startup. Local and larger deployments retain the full corpus by default.
+    if os.getenv("PHARMASTOCK_LIGHT_MODE", "").strip().lower() in {"1", "true", "yes", "on"}:
+        return DEFAULT_DOCUMENTS.copy()
     if directory is None:
         try:
             from ..config import PROJECT_ROOT
