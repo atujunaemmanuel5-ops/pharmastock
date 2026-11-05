@@ -5,7 +5,7 @@ from __future__ import annotations
 from .retrieve import retrieve
 
 OUT_OF_SCOPE = ("diagnose", "self-medicate", "dosage for myself", "evade prescription", "how to abort")
-REFERENCE_TERMS = ("drug", "medicine", "pharmacy", "prescription", "expiry", "interaction", "stock", "reorder", "dispens", "guideline", "health", "essential", "procurement", "treatment", "amoxicillin", "warfarin", "misoprostol")
+REFERENCE_TERMS = ("drug", "medicine", "pharmacy", "prescription", "expiry", "interaction", "stock", "reorder", "dispens", "guideline", "ucg", "emhslu", "who", "health", "essential", "procurement", "treatment", "amoxicillin", "warfarin", "levonorgestrel", "misoprostol")
 
 
 def answer_question(question: str, documents=None) -> dict:

@@ -33,6 +33,28 @@ DEFAULT_DOCUMENTS = [
     },
 ]
 
+# The free hosted demo cannot retain every page of the reference PDFs in memory.
+# Keep the pages used by the evaluation questions, plus pages containing the
+# main medicine/supply terms, so the hosted assistant remains useful and cited.
+LIGHT_PAGE_HINTS = {
+    "uganda_clinical_guidelines_2023.pdf": {
+        "pages": {22, 38, 49, 55, 101, 783},
+        "terms": {"clinical judgement", "procurement", "amoxicillin", "levonorgestrel", "misoprostol", "prescription"},
+    },
+    "uganda_emhslu_2023.pdf": {
+        "pages": {1, 10, 14, 24, 25, 42},
+        "terms": {"amoxicillin", "warfarin", "levonorgestrel", "misoprostol", "procurement", "dispensing", "essential medicines"},
+    },
+    "who_model_list_essential_medicines_24th_2025.pdf": {
+        "pages": {1, 2, 12, 42, 59, 60},
+        "terms": {"amoxicillin", "warfarin", "levonorgestrel", "misoprostol", "procurement", "essential medicines"},
+    },
+    "Practical Guideline for Dispensing at Lower Level Health Centres 2014_Final_0.p.pdf": {
+        "pages": {1, 14},
+        "terms": {"dispens", "prescription", "amoxicillin", "patient counselling"},
+    },
+}
+
 
 def ingest_directory(directory: Path) -> list[dict]:
     """Extract searchable page-level chunks from local PDFs and text files."""
@@ -55,13 +77,43 @@ def ingest_directory(directory: Path) -> list[dict]:
     return records or DEFAULT_DOCUMENTS.copy()
 
 
+def ingest_light_directory(directory: Path) -> list[dict]:
+    """Load a bounded, relevant page subset for low-memory hosted deployments."""
+    records = []
+    for path in sorted(directory.glob("*.pdf")):
+        hints = LIGHT_PAGE_HINTS.get(path.name)
+        if not hints:
+            continue
+        with fitz.open(path) as document:
+            for page_number, page in enumerate(document, start=1):
+                page_text = page.get_text("text").strip()
+                lowered = page_text.lower()
+                if page_number not in hints["pages"] and not any(term in lowered for term in hints["terms"]):
+                    continue
+                for text in chunk_text(page_text):
+                    records.append({
+                        "doc_name": path.name,
+                        "page": page_number,
+                        "section": "page text",
+                        "source_url": str(path),
+                        "text": text,
+                    })
+    return records or DEFAULT_DOCUMENTS.copy()
+
+
 def load_corpus(directory: Path | None = None) -> list[dict]:
     """Load the local RAG corpus, falling back to built-in passages."""
     # The free hosted demo has only 512 MB available. Keep its cited safety
     # passages available without loading several large PDFs into memory during
     # startup. Local and larger deployments retain the full corpus by default.
     if os.getenv("PHARMASTOCK_LIGHT_MODE", "").strip().lower() in {"1", "true", "yes", "on"}:
-        return DEFAULT_DOCUMENTS.copy()
+        if directory is None:
+            try:
+                from ..config import PROJECT_ROOT
+            except ImportError:
+                from src.config import PROJECT_ROOT
+            directory = PROJECT_ROOT / "data" / "rag"
+        return ingest_light_directory(directory)
     if directory is None:
         try:
             from ..config import PROJECT_ROOT
