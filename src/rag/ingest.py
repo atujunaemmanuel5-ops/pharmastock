@@ -260,7 +260,9 @@ def load_corpus(directory: Path | None = None) -> list[dict]:
     # The free hosted demo has only 512 MB available. Keep its cited safety
     # passages available without loading several large PDFs into memory during
     # startup. Local and larger deployments retain the full corpus by default.
-    if os.getenv("PHARMASTOCK_LIGHT_MODE", "").strip().lower() in {"1", "true", "yes", "on"}:
+    # Keep small hosted instances safe even when their environment has not
+    # yet picked up the Blueprint variable. Full PDF ingestion is opt-in.
+    if os.getenv("PHARMASTOCK_LIGHT_MODE", "true").strip().lower() in {"1", "true", "yes", "on"}:
         return DEFAULT_DOCUMENTS.copy() + HOSTED_DOCUMENTS.copy() + catalogue_documents()
     if directory is None:
         try:
