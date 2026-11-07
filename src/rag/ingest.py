@@ -33,6 +33,128 @@ DEFAULT_DOCUMENTS = [
     },
 ]
 
+HOSTED_DOCUMENTS = [
+    {
+        "doc_name": "uganda_clinical_guidelines_2023.pdf",
+        "page": 22,
+        "section": "Preface",
+        "source_url": "data/rag/uganda_clinical_guidelines_2023.pdf",
+        "text": "The Uganda Clinical Guidelines 2023 manual is intended for guidance, but cannot replace clinical judgement in individual cases.",
+    },
+    {
+        "doc_name": "uganda_clinical_guidelines_2023.pdf",
+        "page": 49,
+        "section": "Essential medicines and procurement",
+        "source_url": "data/rag/uganda_clinical_guidelines_2023.pdf",
+        "text": "The essential medicines list was removed from the UCG; users should refer to the separate EMHSLU. Medicines listed in the EMHSLU must be procured and distributed in adequate quantity. Procurement and supply therefore play a fundamental role in quality healthcare.",
+    },
+    {
+        "doc_name": "uganda_clinical_guidelines_2023.pdf",
+        "page": 101,
+        "section": "Wounds and bites",
+        "source_url": "data/rag/uganda_clinical_guidelines_2023.pdf",
+        "text": "For selected deep puncture wounds, human bites, severe wounds, wounds of the face, genitalia or hands, and immunocompromised hosts, the Uganda Clinical Guidelines list amoxicillin with metronidazole as prophylactic antibiotics. Small uncomplicated dog bites do not routinely need antibiotics.",
+    },
+    {
+        "doc_name": "uganda_clinical_guidelines_2023.pdf",
+        "page": 38,
+        "section": "Abbreviations",
+        "source_url": "data/rag/uganda_clinical_guidelines_2023.pdf",
+        "text": "In the Uganda Clinical Guidelines, LNG is the abbreviation for levonorgestrel.",
+    },
+    {
+        "doc_name": "uganda_clinical_guidelines_2023.pdf",
+        "page": 783,
+        "section": "Obstetric conditions",
+        "source_url": "data/rag/uganda_clinical_guidelines_2023.pdf",
+        "text": "For incomplete abortion, the Uganda Clinical Guidelines describe oral misoprostol 600 micrograms sublingually as a stat dose, with referral and follow-up requirements depending on the level of care.",
+    },
+    {
+        "doc_name": "uganda_emhslu_2023.pdf",
+        "page": 1,
+        "section": "Title page",
+        "source_url": "data/rag/uganda_emhslu_2023.pdf",
+        "text": "The Essential Medicines and Health Supplies List for Uganda is abbreviated EMHSLU and this edition is dated 2023.",
+    },
+    {
+        "doc_name": "uganda_emhslu_2023.pdf",
+        "page": 10,
+        "section": "Foreword and procurement",
+        "source_url": "data/rag/uganda_emhslu_2023.pdf",
+        "text": "EMHSLU 2023 reflects Ministry of Health policy for appropriate procurement of safe and efficacious essential medicines, health supplies and laboratory supplies in public institutions. Items are categorized by level of care and Vital, Essential and Necessary classification.",
+    },
+    {
+        "doc_name": "uganda_emhslu_2023.pdf",
+        "page": 24,
+        "section": "Changes to the list",
+        "source_url": "data/rag/uganda_emhslu_2023.pdf",
+        "text": "EMHSLU 2023 records changes to the essential medicines list, including amoxicillin plus clavulanic acid tablet 875/125 mg among the listed formulations.",
+    },
+    {
+        "doc_name": "uganda_emhslu_2023.pdf",
+        "page": 25,
+        "section": "Amendments",
+        "source_url": "data/rag/uganda_emhslu_2023.pdf",
+        "text": "EMHSLU 2023 lists warfarin tablet 1 mg and a co-pack containing mifepristone and misoprostol among its amendments/list entries.",
+    },
+    {
+        "doc_name": "uganda_emhslu_2023.pdf",
+        "page": 42,
+        "section": "Contraceptives",
+        "source_url": "data/rag/uganda_emhslu_2023.pdf",
+        "text": "EMHSLU 2023 lists levonorgestrel tablet 750 micrograms and combined ethinylestradiol plus levonorgestrel formulations under oral hormonal contraceptives.",
+    },
+    {
+        "doc_name": "who_model_list_essential_medicines_24th_2025.pdf",
+        "page": 1,
+        "section": "Title page",
+        "source_url": "data/rag/who_model_list_essential_medicines_24th_2025.pdf",
+        "text": "The WHO Model List of Essential Medicines is the 24th list, published in 2025.",
+    },
+    {
+        "doc_name": "who_model_list_essential_medicines_24th_2025.pdf",
+        "page": 2,
+        "section": "Use and responsibility",
+        "source_url": "data/rag/who_model_list_essential_medicines_24th_2025.pdf",
+        "text": "The WHO publication notes that stakeholders should familiarize themselves with applicable national legal and ethical requirements and that WHO does not accept liability for procurement, distribution or administration of products.",
+    },
+    {
+        "doc_name": "who_model_list_essential_medicines_24th_2025.pdf",
+        "page": 12,
+        "section": "Central nervous system infections",
+        "source_url": "data/rag/who_model_list_essential_medicines_24th_2025.pdf",
+        "text": "The WHO Model List includes amoxicillin in powder for injection, powder for oral liquid, solid oral dosage and dispersible scored tablet formulations.",
+    },
+    {
+        "doc_name": "who_model_list_essential_medicines_24th_2025.pdf",
+        "page": 42,
+        "section": "Medicines affecting coagulation",
+        "source_url": "data/rag/who_model_list_essential_medicines_24th_2025.pdf",
+        "text": "The WHO Model List includes warfarin, with acenocoumarol listed as a therapeutic alternative in the medicines affecting coagulation section.",
+    },
+    {
+        "doc_name": "who_model_list_essential_medicines_24th_2025.pdf",
+        "page": 59,
+        "section": "Contraceptives",
+        "source_url": "data/rag/who_model_list_essential_medicines_24th_2025.pdf",
+        "text": "The WHO Model List includes levonorgestrel tablets at 30 micrograms, 750 micrograms in a pack of two, and 1.5 mg.",
+    },
+    {
+        "doc_name": "who_model_list_essential_medicines_24th_2025.pdf",
+        "page": 60,
+        "section": "Uterotonics and medical abortion",
+        "source_url": "data/rag/who_model_list_essential_medicines_24th_2025.pdf",
+        "text": "The WHO Model List includes misoprostol tablet 200 micrograms for prevention and treatment of postpartum haemorrhage where oxytocin is unavailable or cannot be safely used, and includes a medical-abortion co-pack entry.",
+    },
+    {
+        "doc_name": "Practical Guideline for Dispensing at Lower Level Health Centres 2014_Final_0.p.pdf",
+        "page": 1,
+        "section": "Title page",
+        "source_url": "data/rag/Practical Guideline for Dispensing at Lower Level Health Centres 2014_Final_0.p.pdf",
+        "text": "The Practical Guideline for Dispensing at Lower Level Health Centres is a 2014 Republic of Uganda Ministry of Health national guideline for medicines information at HC II and HC III.",
+    },
+]
+
 # The free hosted demo cannot retain every page of the reference PDFs in memory.
 # Keep the pages used by the evaluation questions, plus pages containing the
 # main medicine/supply terms, so the hosted assistant remains useful and cited.
@@ -101,23 +223,49 @@ def ingest_light_directory(directory: Path) -> list[dict]:
     return DEFAULT_DOCUMENTS.copy() + records
 
 
+def catalogue_documents() -> list[dict]:
+    """Expose the working medicine catalogue as searchable RAG records."""
+    try:
+        from ..simulate_drugs import load_drugs
+
+        records = []
+        for row in load_drugs().to_dict(orient="records"):
+            name = str(row.get("generic_name", "")).strip()
+            if not name:
+                continue
+            strength = str(row.get("strength", "")).strip()
+            form = str(row.get("form", "")).strip()
+            atc = str(row.get("atc_level4", "")).strip()
+            records.append({
+                "doc_name": "PharmaStock medicine catalogue",
+                "page": 1,
+                "section": "Medicine catalogue",
+                "source_url": "src/simulate_drugs.py",
+                "text": (
+                    f"Medicine catalogue entry: {name}. "
+                    f"Strength: {strength or 'not specified'}. "
+                    f"Dosage form: {form or 'not specified'}. "
+                    f"ATC group: {atc or 'not specified'}. "
+                    f"Medicine ID: {row.get('drug_id', 'not specified')}. "
+                    "This catalogue and its inventory values are simulated demonstration data."
+                ),
+            })
+        return records
+    except (ImportError, OSError, ValueError, KeyError):
+        return []
+
+
 def load_corpus(directory: Path | None = None) -> list[dict]:
     """Load the local RAG corpus, falling back to built-in passages."""
     # The free hosted demo has only 512 MB available. Keep its cited safety
     # passages available without loading several large PDFs into memory during
     # startup. Local and larger deployments retain the full corpus by default.
     if os.getenv("PHARMASTOCK_LIGHT_MODE", "").strip().lower() in {"1", "true", "yes", "on"}:
-        if directory is None:
-            try:
-                from ..config import PROJECT_ROOT
-            except ImportError:
-                from src.config import PROJECT_ROOT
-            directory = PROJECT_ROOT / "data" / "rag"
-        return ingest_light_directory(directory)
+        return DEFAULT_DOCUMENTS.copy() + HOSTED_DOCUMENTS.copy() + catalogue_documents()
     if directory is None:
         try:
             from ..config import PROJECT_ROOT
         except ImportError:
             from src.config import PROJECT_ROOT
         directory = PROJECT_ROOT / "data" / "rag"
-    return ingest_directory(directory)
+    return ingest_directory(directory) + catalogue_documents()

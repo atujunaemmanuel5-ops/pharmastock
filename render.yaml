@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: pharmastock-api
+    name: pharmastock
     runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
@@ -12,8 +12,28 @@ services:
         value: "true"
       - key: PHARMASTOCK_DB_BACKEND
         value: sqlite
+      - key: PHARMASTOCK_LIGHT_MODE
+        value: "true"
       - key: PYTHON_VERSION
         value: 3.12.10
+      - key: PHARMASTOCK_LLM_PROVIDER
+        value: none
+      - key: PHARMASTOCK_LLM_API_KEY
+        sync: false
+      - key: PHARMASTOCK_LLM_MODEL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: PHARMASTOCK_EMBEDDING_PROVIDER
+        value: gemini
+      - key: PHARMASTOCK_EMBEDDING_API_URL
+        sync: false
+      - key: PHARMASTOCK_EMBEDDING_API_KEY
+        sync: false
+      - key: PHARMASTOCK_EMBEDDING_MODEL
+        sync: false
+      - key: PHARMASTOCK_RAG_EMBEDDINGS_PATH
+        value: data/processed/rag_embeddings.json
       - key: PHARMASTOCK_API_KEY
         sync: false
       - key: PHARMASTOCK_ADMIN_KEY
